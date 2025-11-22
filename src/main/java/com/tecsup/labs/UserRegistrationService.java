@@ -1,83 +1,113 @@
 package com.tecsup.labs;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+
 /**
- * Servicio de registro de usuarios con varios problemas de calidad
- * intencionales para el laboratorio.
+ * Servicio de registro de usuarios con problemas de calidad corregidos.
+ * Ahora sigue las convenciones de estilo y buenas prácticas.
  */
-public class UserRegistrationService {
-// Mala práctica: campo público y mutable
-public String lastErrorMessage = "";
-// Mala práctica: lista sin genéricos
-private List users = new ArrayList();
-// Mala práctica: número mágico
-private static final int MIN_PASSWORD_LENGTH = 8;
-// Constructor con lógica innecesaria
-public UserRegistrationService() {
-// Comentario engañoso: aquí no se valida nada aún
-System.out.println("Constructor llamado");
-if (users == null) { // Esta condición nunca se cumple
-users = new ArrayList();
-}
-}
-/**
- * Registra un nuevo usuario.
- * Retorna true si se registra, false en caso contrario.
- */
-public boolean registerUser(String username, String password, String email) {
-// Posible NullPointerException: no se valida si username es null
-if (username.trim().isEmpty()) {
-lastErrorMessage = "El nombre de usuario está vacío.";
-return false;
-}
-// Código duplicado: validación de longitud escrita dos veces
-if (password == null) {
-lastErrorMessage = "La contraseña es null.";
-return false;
-}
-if (password.length() < MIN_PASSWORD_LENGTH) {
-lastErrorMessage = "La contraseña es muy corta.";
-return false;
-}
-if (password.length() < MIN_PASSWORD_LENGTH) { // Duplicado intencional
-System.out.println("Advertencia: contraseña corta.");
-}
-// Mala lógica: condición incorrecta para validar email
-if (!email.contains("@") && !email.contains(".")) {
-lastErrorMessage = "El correo electrónico no parece válido.";
-// En realidad, debería ser una condición más estricta
-}
-// Manejo de excepciones deficiente
-try {
-// Simulación de acceso a base de datos
-saveUser(username, password, email);
-} catch (Exception e) {
-// Mala práctica: capturar Exception general y no registrar nada
-lastErrorMessage = "Error desconocido al guardar el usuario.";
-return false;
-}
-// Usuarios duplicados no se validan
-System.out.println("Usuario registrado: " + username);
-return true;
-}
-private void saveUser(String username, String password, String email) throws Exception {
-// Simula guardar el usuario en una lista
-users.add(username); // Mala práctica: solo se guarda el nombre
-if (username.equals("error")) {
-// Excepción artificial para que las herramientas lo detecten
-throw new Exception("Nombre de usuario no permitido.");
-}
-}
-// Método con nombre poco claro y sin comentarios
-public int x(String s) {
-if (s == null) {
-return -1;
-}
-// Uso ineficiente de String
-String result = "";
-for (int i = 0; i < s.length(); i++) {
-result = result + s.charAt(i);
-}
-return result.length();
-}
+public final class UserRegistrationService {
+
+    /** Mensaje de error de la última operación fallida. */
+    private String lastErrorMessage = "";
+
+    /** Lista de usuarios registrados. */ // ¡PUNTO AGREGADO!
+    private final List<String> users = new ArrayList<>();
+
+    /** Longitud mínima de contraseña. */ // ¡PUNTO AGREGADO!
+    private static final int MIN_PASSWORD_LENGTH = 8;
+
+    /**
+     * Constructor por defecto del servicio.
+     */
+    public UserRegistrationService() {
+    }
+
+    /**
+     * Registra un nuevo usuario.
+     * @param username Nombre de usuario (debe ser final).
+     * @param password Contraseña (debe ser final).
+     * @param email Correo electrónico (debe ser final).
+     * @return true si el registro es exitoso, false si falla.
+     */
+    public boolean registerUser(final String username,
+        final String password,
+        final String email) {
+
+        if (username == null || username.trim().isEmpty()) {
+            lastErrorMessage = "El nombre de usuario está vacío.";
+            return false;
+        }
+
+        if (password == null) {
+            lastErrorMessage = "La contraseña es null.";
+            return false;
+        }
+
+        if (password.length() < MIN_PASSWORD_LENGTH) {
+            lastErrorMessage = "La contraseña es muy corta (Mínimo "
+                               + MIN_PASSWORD_LENGTH + " caracteres).";
+            return false;
+        }
+
+        if (!email.contains("@") || !email.contains(".")) {
+            lastErrorMessage = "El correo electrónico no parece válido.";
+            return false;
+        }
+
+        try {
+            saveUser(username, password, email);
+        } catch (final Exception e) {
+            final StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            System.err.println("Error durante el registro: \n" + sw.toString());
+
+            lastErrorMessage = "Error desconocido al guardar el usuario.";
+            return false;
+        }
+
+        System.out.println("Usuario registrado: " + username);
+        return true;
+    }
+
+    /**
+     * Simula el almacenamiento del usuario en la "base de datos".
+     * @param username Nombre de usuario (debe ser final).
+     * @param password Contraseña (debe ser final).
+     * @param email Correo electrónico (debe ser final).
+     * @throws Exception Si ocurre un error al guardar (simulado).
+     */
+    private void saveUser(final String username,
+        final String password,
+        final String email) throws Exception {
+
+        users.add(username);
+
+        if ("error".equalsIgnoreCase(username)) {
+            throw new Exception("Nombre de usuario no permitido.");
+        }
+    }
+
+    /**
+     * Calcula la longitud de la cadena de entrada.
+     * @param s Cadena de entrada (debe ser final).
+     * @return La longitud de la cadena, o -1 si es nula.
+     */
+    public int getStringLength(final String s) {
+        if (s == null) {
+            return -1;
+        }
+        return s.length();
+    }
+
+    /**
+     * Getter para obtener el último mensaje de error (por encapsulamiento).
+     * @return El último mensaje de error.
+     */
+    public String getLastErrorMessage() {
+        return lastErrorMessage;
+    }
 }
